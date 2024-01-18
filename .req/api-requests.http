@@ -1,0 +1,19 @@
+### get client accounts
+GET localhost:8080/client/1/accounts
+Content-Type: application/json
+
+### transfer funds
+POST localhost:8080/account/transfer
+Content-Type: application/json
+
+{
+  "sourceAccountId": 1,
+  "targetAccountId": 2,
+  "targetCurrency": "USD",
+  "amount": 1
+}
+
+### get account history
+GET http://localhost:8080/account/1/history?offset=5&limit=3
+Content-Type: application/json
+

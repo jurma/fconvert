@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="3" author="admin">
+        <createTable tableName="account">
+            <column autoIncrement="true" name="id" type="INT">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="currency" type="VARCHAR(3)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="funds" type="NUMBER(19, 4)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="client_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <insert tableName="account">
+            <column name="id" valueNumeric="1"/>
+            <column name="currency" value="EUR"/>
+            <column name="funds" valueNumeric="300.0"/>
+            <column name="client_id" valueNumeric="1"/>
+        </insert>
+        <insert tableName="account">
+            <column name="id" valueNumeric="2"/>
+            <column name="currency" value="USD"/>
+            <column name="funds" valueNumeric="200.0"/>
+            <column name="client_id" valueNumeric="1"/>
+        </insert>
+        <insert tableName="account">
+            <column name="id" valueNumeric="3"/>
+            <column name="currency" value="EUR"/>
+            <column name="funds" valueNumeric="10.0"/>
+            <column name="client_id" valueNumeric="1"/>
+        </insert>
+        <insert tableName="account">
+            <column name="id" valueNumeric="4"/>
+            <column name="currency" value="EUR"/>
+            <column name="funds" valueNumeric="100.0"/>
+            <column name="client_id" valueNumeric="2"/>
+        </insert>
+        <insert tableName="account">
+            <column name="id" valueNumeric="5"/>
+            <column name="currency" value="USD"/>
+            <column name="funds" valueNumeric="1.0"/>
+            <column name="client_id" valueNumeric="2"/>
+        </insert>
+        <rollback>
+            <dropTable tableName="account"/>
+        </rollback>
+    </changeSet>
+</databaseChangeLog>

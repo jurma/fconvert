@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <include file="/db/changelog/changes/1-create-client.xml"/>
+    <include file="/db/changelog/changes/3-create-account.xml"/>
+    <include file="/db/changelog/changes/4-create-fk-account-client.xml"/>
+    <include file="/db/changelog/changes/5-create-history.xml"/>
+    <include file="/db/changelog/changes/6-init-fake-history.xml"/>
+    <changeSet id="0" author="admin">
+
+    </changeSet>
+</databaseChangeLog>
