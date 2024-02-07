@@ -7,9 +7,13 @@ import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.retry.RetryCallback;
+import org.springframework.retry.support.RetryTemplate;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 
 import java.io.IOException;
@@ -18,18 +22,37 @@ import java.math.BigDecimal;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class AccountServiceRateApiTest {
     private static MockWebServer webServer;
-    RestClient restClient = RestClient.create(String.format("http://%s:8080", webServer.getHostName()));
-    private final AccountService service = new AccountService(mock(AccountRepository.class), mock(HistoryRepository.class), restClient);
+    private final RestClient restClient = RestClient.create(String.format("http://%s:8080", webServer.getHostName()));
+    private final RetryTemplate retryTemplate = mock(RetryTemplate.class);
+    private final AccountService service = new AccountService(mock(AccountRepository.class), mock(HistoryRepository.class), restClient, retryTemplate);
 
+    /*Todo: add tests for retries ()
+    another test class with
+    @RunWith(SpringJUnit4ClassRunner.class)
+    @ContextConfiguration(
+              classes = RetryConfig.class,
+              loader = AnnotationConfigContextLoader.class)
+     */
     @BeforeAll
     static void setUp() throws IOException {
         webServer = new MockWebServer();
         webServer.start(8080);
+    }
+
+    @SuppressWarnings("rawtypes")
+    @BeforeEach
+    void generalMocking() {
+        when(retryTemplate.execute(any())).thenAnswer(invocation -> {
+            RetryCallback retry = invocation.getArgument(0);
+            return retry.doWithRetry(null);
+        });
     }
 
     @AfterAll
@@ -83,8 +106,8 @@ public class AccountServiceRateApiTest {
         webServer.enqueue(new MockResponse().setBody("any error")
                 .setResponseCode(400)
                 .addHeader("Content-Type", "application/json; charset=utf-8"));
-        var exception = assertThrows(IllegalStateException.class, () -> service.getConversionRate("EUR", "USD"));
-        assertThat(exception.getMessage()).contains("Conversion rate service does not respond OK. Please come later.");
+        var exception = assertThrows(HttpClientErrorException.class, () -> service.getConversionRate("EUR", "USD"));
+        assertThat(exception.getMessage()).contains("any error");
     }
 
     @Test

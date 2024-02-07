@@ -7,7 +7,8 @@ import com.jurma.mintos.fconvert.repository.AccountRepository;
 import com.jurma.mintos.fconvert.repository.HistoryRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
+import org.springframework.retry.support.RetryTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
@@ -27,6 +28,7 @@ public class AccountService {
     private AccountRepository accountRepository;
     private HistoryRepository historyRepository;
     private RestClient restClient;
+    private RetryTemplate retryTemplate;
 
     @Transactional
     public void transferFunds(TransferFundsDto dto) {
@@ -78,17 +80,8 @@ public class AccountService {
     }
 
     BigDecimal getConversionRate(String sourceCurrency, String targetCurrency) {
-        var conversionRate = restClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .queryParam("source", sourceCurrency)
-                        .queryParam("currencies", targetCurrency)
-                        .build())
-                .retrieve()
-                .onStatus(HttpStatusCode::isError, (request, response) -> {
-                    throw new IllegalStateException("Conversion rate service does not respond OK. Please come later.");
-                })
-                .toEntity(ConversionRateDto.class);
 
+        var conversionRate = retryTemplate.execute(retryContext -> requestApi(sourceCurrency, targetCurrency));
         var body = conversionRate.getBody();
         assert body != null;
 
@@ -98,6 +91,16 @@ public class AccountService {
         return body.quotes().entrySet().stream()
                 .findFirst().map(Map.Entry::getValue)
                 .orElseThrow(() -> new IllegalStateException("No conversion rate found for requested operation."));
+    }
+
+    private ResponseEntity<ConversionRateDto> requestApi(String sourceCurrency, String targetCurrency) {
+        return restClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .queryParam("source", sourceCurrency)
+                        .queryParam("currencies", targetCurrency)
+                        .build())
+                .retrieve()
+                .toEntity(ConversionRateDto.class);
     }
 
     public List<History> getHistory(Long accountId, Long offset, Long limit) {
