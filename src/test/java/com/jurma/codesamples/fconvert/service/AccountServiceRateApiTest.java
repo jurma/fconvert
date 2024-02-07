@@ -1,7 +1,7 @@
 package com.jurma.codesamples.fconvert.service;
 
-import com.jurma.codesamples.fconvert.repository.HistoryRepository;
 import com.jurma.codesamples.fconvert.repository.AccountRepository;
+import com.jurma.codesamples.fconvert.repository.HistoryRepository;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
@@ -34,13 +34,6 @@ public class AccountServiceRateApiTest {
     private final RetryTemplate retryTemplate = mock(RetryTemplate.class);
     private final AccountService service = new AccountService(mock(AccountRepository.class), Mockito.mock(HistoryRepository.class), restClient, retryTemplate);
 
-    /*Todo: add tests for retries ()
-    another test class with
-    @RunWith(SpringJUnit4ClassRunner.class)
-    @ContextConfiguration(
-              classes = RetryConfig.class,
-              loader = AnnotationConfigContextLoader.class)
-     */
     @BeforeAll
     static void setUp() throws IOException {
         webServer = new MockWebServer();
